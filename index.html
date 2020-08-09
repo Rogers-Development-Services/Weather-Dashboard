@@ -5,39 +5,129 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <!-- Font Awesome CSS Icons -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
         integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet" />
+    <!-- <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet" /> -->
+    <!-- Style Fixes -->
     <link rel="stylesheet" href="./Assets/style.css" />
+    <!-- Flavicon -->
     <link rel="icon" type="image/png" href="./Assets/Images/RDS.png">
     <title>Weather Dashboard</title>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <span class="navbar-brand mb-1 h1">Weather Dashboard</span>
-    </nav>
+    <!-- Main Bootstrap Search -->
+    <div class="container" id="dashboard-body">
 
-    <div class="container-fluid" id="dashboard-body">
-        <div class="row"></div>
-            <div class="col"></div>
-                <h2>Search for a city!</h2>
-                <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0 city-search"  type="submit"><span><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
-                        <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
-                      </svg></span></button>
-                  </form>
-            <div class="col cities-searched"></div>
-        <div class="row">    
-            <div class="col weather-display"></div>
-            <div class="col weekly-forcast"></div>
+        <!-- Jumbotron for Title -->
+        <div class="jumbotron" style="background-color: #20315A ; color: white;">
+            <h1 class="text-center">
+                <strong>
+                    <i class="fa fa-newspaper-o"></i>Weather Dashboard</strong>
+            </h1>
         </div>
-    </div>
 
+        <!-- Row for Searching Open Weather and Displaying Searched cities -->
+        <div class="row">
+
+            <!-- Col for Searching Open Weather -->
+            <div class="col-sm-4">
+                <!-- First card is for handling the search parameters -->
+                <div class="card">
+                    <div class="card-header">
+                        <strong>
+                            <i class="fa fa-list-alt"></i> Search Parameters</strong>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Here we create an HTML Form for handling the inputs-->
+                        <form class="form">
+
+                            <!-- Here we create the text box for capturing the search term-->
+                            <div class="form-group">
+                                <label for="search">City Search:</label>
+                                <input type="text" class="form-control" id="search-term">
+                            </div>
+
+                            <!-- Here we capture the State Parameter-->
+                            <div class="form-group">
+                                <label for="start-year">State (Optional):</label>
+                                <input type="text" class="form-control" id="start-year">
+                            </div>
+
+                            <!-- Here we capture the Country Parameter -->
+                            <div class="form-group">
+                                <label for="end-year">Country (Optional):</label>
+                                <input type="text" class="form-control" id="end-year">
+                            </div>
+
+                            <!-- Here we have our final submit button -->
+                            <button type="submit" class="btn btn-default" id="run-search">
+                                <i class="fa fa-search"></i> Search</button>
+                            <button class="btn btn-default" id="clear-all">
+                                <i class="fa fa-trash"></i> Clear Results</button>
+                        </form>
+                    </div>
+                </div>
+
+                <br>
+                <!-- This card will handle all of the retrieved cities, it will initially be made up of a card and wells for each of the cities retrieved -->
+                <div class="card">
+
+                    <!-- card Heading for the retrieved cities box -->
+                    <div class="card-header">
+                        <strong><i class="fa fa-table"></i> Cities Searched</strong>
+                    </div>
+
+                    <!-- This main card will hold each of the resulting cities -->
+                    <div class="card-body" id="city-section"></div>
+                </div>
+            </div>
+
+            <!-- This col will handle and display the retrieved current weather and five day forecast -->
+            <div class="col-sm-8">
+                <div class="card">
+                    <div class="card-header">
+                        <strong><i class="fa fa-table"></i> Current Weather</strong>
+                    </div>
+
+                    <!-- This main card will hold the current weather -->
+                    <div class="card-body" id="current-weather"></div>
+                </div>
+
+                <br>
+                <!-- This col will handle the retrieved five day weather forecast -->
+                <div class="card">
+                    <div class="card-header">
+                        <strong><i class="fa fa-table"></i> Five Day Forecast</strong>
+                    </div>
+
+                    <!-- This main card will hold the current weather -->
+                    <div class="card-body" id="weekly-forcast"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Region -->
+        <div class="row">
+            <div class="col-sm-12">
+
+                <!-- Line Break followed by closing -->
+                <hr>
+                <h5 class="text-center">
+                    <small>Made with lots and lots of
+                        <i class="fa fa-heart"></i>
+                    </small>
+                </h5>
+
+            </div>
+        </div>
+
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
@@ -54,3 +144,14 @@
 </body>
 
 </html>
+
+<!-- <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0 city-search" type="submit"><span><svg width="1em"
+                        height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                        <path fill-rule="evenodd"
+                            d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                    </svg></span></button>
+            </form> -->

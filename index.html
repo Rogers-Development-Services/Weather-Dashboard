@@ -24,7 +24,7 @@
     <div class="container" id="dashboard-body">
 
         <!-- Jumbotron for Title -->
-        <div class="jumbotron" style="background-color: #20315A ; color: white;">
+        <div class="jumbotron">
             <h1 class="text-center">
                 <strong>
                     <i class="fa fa-newspaper-o"></i>Weather Dashboard</strong>
@@ -50,25 +50,25 @@
                             <!-- Here we create the text box for capturing the search term-->
                             <div class="form-group">
                                 <label for="search">City Search:</label>
-                                <input type="text" class="form-control" id="search-term">
+                                <input type="text" class="form-control" id="search-city">
                             </div>
 
                             <!-- Here we capture the State Parameter-->
                             <div class="form-group">
-                                <label for="start-year">State (Optional):</label>
-                                <input type="text" class="form-control" id="start-year">
+                                <label for="start-year">State (Optional & only for USA locations):</label>
+                                <input type="text" class="form-control" id="search-state">
                             </div>
 
                             <!-- Here we capture the Country Parameter -->
                             <div class="form-group">
                                 <label for="end-year">Country (Optional):</label>
-                                <input type="text" class="form-control" id="end-year">
+                                <input type="text" class="form-control" id="search-country">
                             </div>
 
                             <!-- Here we have our final submit button -->
-                            <button type="submit" class="btn btn-default" id="run-search">
+                            <button type="submit" class="btn btn-primary" id="run-search">
                                 <i class="fa fa-search"></i> Search</button>
-                            <button class="btn btn-default" id="clear-all">
+                            <button class="btn btn-primary" id="clear-all">
                                 <i class="fa fa-trash"></i> Clear Results</button>
                         </form>
                     </div>
@@ -107,7 +107,7 @@
                     </div>
 
                     <!-- This main card will hold the current weather -->
-                    <div class="card-body" id="weekly-forcast"></div>
+                    <div class="card-body" id="weekly-forecast"></div>
                 </div>
             </div>
         </div>

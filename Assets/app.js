@@ -124,38 +124,37 @@ return forecastURL
 
 function updateForecast(response) {
 
-  const dateDiv = $('<div>').css({
-    "display": "block",
-    "max-width": "20%",
-    "padding": "1rem",
-    "margin": "0 0 1rem 0",
-    "background-color": "#007eb5",
-    "border-style": "solid",
-    "color": "white",
-  });
-  dateDiv.attr({
-    "id": "individual-day",
-  })
-  const dateData = moment(response.list[4].dt*1000).format('MM-D-YY');
-  console.log(dateData);
-  const dateIcon = new Image();
-  dateIcon.src = 'http://openweathermap.org/img/wn/' + response.list[4].weather[0].icon.replace('n','d') + '.png';
-  dateIcon.alt = response.list[4].weather[0].description;
-  console.log(dateIcon);
-  const dateTempData = '<strong>Temperature: </strong>' + response.list[0].main.temp + ' ℉'
-  console.log(dateTempData);
-  const dateHumidityData = '<strong>Humidity: </strong>' + response.list[0].main.humidity + ' %';
-  console.log(dateHumidityData);
+    //day's weather will be queried everyday at noon
+  let noonIndex = 4;
+  for (i=0; i < 5 ;i++) {
 
-  let dateEl = `<h5>${dateData}</h5>`;
-  let dateTempEl = `<p>${dateTempData}</p>`;
-  let dateHumidity = `<p>${dateHumidityData}</p>`;
-  //day's weather will be queried everyday at noon
-  // let noonIndex = 4;
-  
-  dateDiv.append(dateEl, dateIcon, dateTempEl, dateHumidity);
-  forecastDiv.append(dateDiv);
+    const dateDiv = $('<div>').css({
+      "display": "block",
+      "max-width": "20%",
+      "padding": "1rem",
+      "margin": "0 0 1rem 0",
+      "background-color": "#007eb5",
+      "border-style": "solid",
+      "color": "white",
+    });
+    dateDiv.attr({
+      "id": "weekday-forecast",
+    })
+    const dateData = moment(response.list[noonIndex].dt*1000).format('ddd <br> MM-D-YY');
+    const dateIcon = new Image();
+    dateIcon.src = 'http://openweathermap.org/img/wn/' + response.list[noonIndex].weather[0].icon.replace('n','d') + '.png';
+    dateIcon.alt = response.list[noonIndex].weather[0].description;
+    const dateTempData = '<strong>Temperature: </strong>' + '<br>' + response.list[i].main.temp + ' ℉'
+    const dateHumidityData = '<strong>Humidity: </strong>' + '<br>' + response.list[i].main.humidity + ' %';
 
+    let dateEl = `<h5>${dateData}</h5>`;
+    let dateTempEl = `<p>${dateTempData}</p>`;
+    let dateHumidity = `<p>${dateHumidityData}</p>`;
+    
+    dateDiv.append(dateEl, dateIcon, dateTempEl, dateHumidity);
+    forecastDiv.append(dateDiv);
+    noonIndex += 8
+  }
 }
 
 // function updateSearch () {

@@ -1,7 +1,7 @@
 // GIVEN a weather dashboard with form inputs 
 // WHEN I search for a city THEN I am presented with current and future conditions for that city and that city is added to the search history [ ]
 // WHEN I view current weather conditions for that city THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index [ X ]
-// WHEN I view the UV index THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe [ ]
+// WHEN I view the UV index THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe [ X ]
 // WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ ]
 // WHEN I click on a city in the search history THEN I am again presented with current and future conditions for that city [ ]
 // WHEN I open the weather dashboard THEN I am presented with the last searched city forecast [ ]
@@ -17,11 +17,10 @@ const forecastData = {
 
 };
 const currentWeatherDiv = $('#current-weather');
+const forecastDiv = $('#weekly-forecast')
 
 // This function will pull from the form and build the query URL for the current weather section.
 function buildQueryURL () {
-  
-// Parameters 'q' = city name, state code and country code divided by comma, use ISO 3166 country codes. 
   
   queryParams.q = $('#search-city')
     .val()
@@ -38,14 +37,8 @@ function buildQueryURL () {
   //   .trim();
 
   let queryURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + queryParams.q + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
-
-  // Logging the URL so we have access to it for troubleshooting
   console.log("---------------\nURL: " + queryURL + "\n---------------");
-  // console.log($.param(queryParams));
   return queryURL;
-
-  // console.log(queryURL + $.param(queryParams));
-  // return queryURL + $.param(queryParams);
 }
 
 // This function takes API Data (JSON/Object) and turns it into elements with the current weather card
@@ -97,14 +90,13 @@ function updateWeather (response) {
 function buildUvURL () {
 
   console.log(queryParams);
-  let uvURL = 'http://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
+  let uvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
   console.log("---------------\nURL: " + uvURL + "\n---------------");
   return uvURL;
 }
 
 function updateUvIndex (response) {  //You need to wait for the AJAX call to come back, thats why we added the new ajax into the first function. JS is asynchronous. 
   let uvIndexData = response.value;
-  console.log(uvIndexData);
   let uvIndex = `<p><strong>UV Index: </strong><span id="uv-index">${uvIndexData}</span></p>`;
   currentWeatherDiv.append(uvIndex);
 
@@ -124,16 +116,45 @@ function updateUvIndex (response) {  //You need to wait for the AJAX call to com
 
 function buildForecastURL () {
 
-let forecastURL = 'api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&appid=' + queryParams.appid;
+let forecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
 console.log("---------------\nURL: " + forecastURL + "\n---------------");
 
 return forecastURL
 }
 
-// WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ ]
 function updateForecast(response) {
 
-  // let futureDateData = response.
+  const dateDiv = $('<div>').css({
+    "display": "block",
+    "max-width": "20%",
+    "padding": "1rem",
+    "margin": "0 0 1rem 0",
+    "background-color": "#007eb5",
+    "border-style": "solid",
+    "color": "white",
+  });
+  dateDiv.attr({
+    "id": "individual-day",
+  })
+  const dateData = moment(response.list[4].dt*1000).format('MM-D-YY');
+  console.log(dateData);
+  const dateIcon = new Image();
+  dateIcon.src = 'http://openweathermap.org/img/wn/' + response.list[4].weather[0].icon.replace('n','d') + '.png';
+  dateIcon.alt = response.list[4].weather[0].description;
+  console.log(dateIcon);
+  const dateTempData = '<strong>Temperature: </strong>' + response.list[0].main.temp + ' ℉'
+  console.log(dateTempData);
+  const dateHumidityData = '<strong>Humidity: </strong>' + response.list[0].main.humidity + ' %';
+  console.log(dateHumidityData);
+
+  let dateEl = `<h5>${dateData}</h5>`;
+  let dateTempEl = `<p>${dateTempData}</p>`;
+  let dateHumidity = `<p>${dateHumidityData}</p>`;
+  //day's weather will be queried everyday at noon
+  // let noonIndex = 4;
+  
+  dateDiv.append(dateEl, dateIcon, dateTempEl, dateHumidity);
+  forecastDiv.append(dateDiv);
 
 }
 
@@ -156,27 +177,11 @@ function clear() {
     event.preventDefault();
 
     clear();
-
-    // let weatherURL = buildQueryURL();
     
     $.ajax({
       url: buildQueryURL(),
       method: "GET"
     }).then(updateWeather); 
-
-    // let uvURL = buildUvURL();
-
-    // $.ajax({
-    //   url: uvURL,
-    //   method: "GET"
-    // }).then(updateUvIndex);
-
-    // let forecastURL = buildForecastURL();
-
-    // $.ajax({
-    //   url: forecastURL,
-    //   method: "GET"
-    // }).then(updateForecast);
     
     // updateSearch();
 });

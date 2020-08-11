@@ -8,11 +8,14 @@
 
 // @returns {string}
 
+// Declare Constants
 const queryParams = { 
   'appid': '20062578d6282047a3d69cc7caf70ee7',
   'units': 'imperial'
 };
+const currentWeatherDiv = $('#current-weather');
 
+// This function will pull from the form and build the query URL for the current weather section.
 function buildQueryURL () {
   
 // Parameters 'q' = city name, state code and country code divided by comma, use ISO 3166 country codes. 
@@ -20,7 +23,7 @@ function buildQueryURL () {
   queryParams.q = $('#search-city')
     .val()
     .trim();
-  console.log(queryParams.q);
+  // console.log(queryParams.q);
   console.log(queryParams);
 
   // queryParams.sys.state = $('#search-state')
@@ -32,42 +35,78 @@ function buildQueryURL () {
   //   .trim();
 
   let queryURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + queryParams.q + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
-  // let urrentUvIndexURL = '#'; 
-  // let forecastURL = '#';
 
   // Logging the URL so we have access to it for troubleshooting
   console.log("---------------\nURL: " + queryURL + "\n---------------");
-
-  return queryURL;
   // console.log($.param(queryParams));
+  return queryURL;
+
   // console.log(queryURL + $.param(queryParams));
   // return queryURL + $.param(queryParams);
 }
 
-function updatePage (response) {
+// This function takes API Data (JSON/Object) and turns it into elements with the current weather card
+function updateWeather (response) {
 
   let cityNameData = response.name;
-  let currentDateData = response.dt;
+  let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A');
   let weatherIcon = response.weather.icon;
   let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
   let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
   let windSpeedData = '<strong>Wind Speed: </strong>' + response.wind.speed + 'MPH';
+
+  // search for the coordinates in the first api 
+  queryParams.lat = response.coord.lat;
+  console.log(queryParams.lat)
+  queryParams.lon = response.coord.lon;
+  console.log(queryParams.lon)
+  console.log(queryParams);
+
   // let uvIndexData = '#';
 
-        // search for the coordinates in the first api 
-        // let lattitude = response.coord.lat;
-        // let longitude = response.coord.lon;
-
-  let currentWeatherDiv = $('#current-weather');
-  let cityName = `<h2>${cityNameData + ' ' + currentDateData}</h2>`;
+  let cityName = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
   // let weatherIconImg = ;
   let currentTemp = `<p>${currentTempData}</p>`;
   let currentHumidity = `<p>${currentHumidityData}</p>`;
   let windSpeed = `<p>${windSpeedData}</p>`
 
-
-  currentWeatherDiv.append(cityName, currentTemp, currentHumidity, windSpeed);
+  currentWeatherDiv.append(cityName, currentTemp, currentHumidity, windSpeed, );
 }
+
+// function buildUvURL () {
+
+//   console.log(queryParams);
+//   let uvURL = 'http://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
+//   console.log("---------------\nURL: " + uvURL + "\n---------------");
+//   return uvURL;
+// }
+
+// function updateUvIndex (response) {
+
+// let uvIndexData = '<strong>UV Index: </strong>' + response.value;
+// let uvIndex = `<p>${uvIndexData}</p>`
+
+// currentWeatherDiv.append(uvIndex);
+// }
+
+function buildForecastURL () {
+
+let forecastURL = 'api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&appid=' + queryParams.appid;
+console.log("---------------\nURL: " + forecastURL + "\n---------------");
+
+return forecastURL
+}
+
+function updateForecast(response) {
+
+  
+
+}
+
+// function updateSearch () {
+
+  
+// }
 
 // Function to empty out the cities
 function clear() {
@@ -83,12 +122,28 @@ function clear() {
 
     clear();
 
-    let queryURL = buildQueryURL();
+    let weatherURL = buildQueryURL();
     
     $.ajax({
-      url: queryURL,
+      url: weatherURL,
       method: "GET"
-    }).then(updatePage); 
+    }).then(updateWeather); 
+
+    // let uvURL = buildUvURL();
+
+    // $.ajax({
+    //   url: uvURL,
+    //   method: "GET"
+    // }).then(updateUvIndex);
+
+    let forecastURL = buildForecastURL();
+
+    $.ajax({
+      url: forecastURL,
+      method: "GET"
+    }).then(updateForecast);
+    
+    // updateSearch();
 });
 
 //  .on("click") function associated with the clear button

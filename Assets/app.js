@@ -1,6 +1,6 @@
 // GIVEN a weather dashboard with form inputs 
 // WHEN I search for a city THEN I am presented with current and future conditions for that city and that city is added to the search history [ ]
-// WHEN I view current weather conditions for that city THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index [ ]
+// WHEN I view current weather conditions for that city THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index [ X ]
 // WHEN I view the UV index THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe [ ]
 // WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ ]
 // WHEN I click on a city in the search history THEN I am again presented with current and future conditions for that city [ ]
@@ -12,6 +12,9 @@
 const queryParams = { 
   'appid': '20062578d6282047a3d69cc7caf70ee7',
   'units': 'imperial'
+};
+const forecastData = {
+
 };
 const currentWeatherDiv = $('#current-weather');
 
@@ -50,44 +53,74 @@ function updateWeather (response) {
 
   let cityNameData = response.name;
   let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A');
-  let weatherIcon = response.weather.icon;
+  let weatherIcon = new Image();
+  console.log(response.weather);
+  weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
+  weatherIcon.alt = response.weather[0].description;
+  console.log(weatherIcon.alt);
+  console.log(weatherIcon);
+  
   let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
   let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
   let windSpeedData = '<strong>Wind Speed: </strong>' + response.wind.speed + 'MPH';
 
-  // search for the coordinates in the first api 
+  // set the lat and log for UV coordinates in queryParams{} 
   queryParams.lat = response.coord.lat;
   console.log(queryParams.lat)
   queryParams.lon = response.coord.lon;
   console.log(queryParams.lon)
   console.log(queryParams);
 
-  // let uvIndexData = '#';
-
-  let cityName = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
-  // let weatherIconImg = ;
+  let cityInfo = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
   let currentTemp = `<p>${currentTempData}</p>`;
   let currentHumidity = `<p>${currentHumidityData}</p>`;
   let windSpeed = `<p>${windSpeedData}</p>`
 
-  currentWeatherDiv.append(cityName, currentTemp, currentHumidity, windSpeed, );
+  let uvURL = buildUvURL();
+
+  $.ajax({
+    url: uvURL,
+    method: "GET"
+  }).then(updateUvIndex);
+
+  let forecastURL = buildForecastURL();
+
+  $.ajax({
+    url: forecastURL,
+    method: "GET"
+  }).then(updateForecast);
+  
+
+  currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
 }
 
-// function buildUvURL () {
+function buildUvURL () {
 
-//   console.log(queryParams);
-//   let uvURL = 'http://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
-//   console.log("---------------\nURL: " + uvURL + "\n---------------");
-//   return uvURL;
-// }
+  console.log(queryParams);
+  let uvURL = 'http://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
+  console.log("---------------\nURL: " + uvURL + "\n---------------");
+  return uvURL;
+}
 
-// function updateUvIndex (response) {
+function updateUvIndex (response) {  //You need to wait for the AJAX call to come back, thats why we added the new ajax into the first function. JS is asynchronous. 
+  let uvIndexData = response.value;
+  console.log(uvIndexData);
+  let uvIndex = `<p><strong>UV Index: </strong><span id="uv-index">${uvIndexData}</span></p>`;
+  currentWeatherDiv.append(uvIndex);
 
-// let uvIndexData = '<strong>UV Index: </strong>' + response.value;
-// let uvIndex = `<p>${uvIndexData}</p>`
+  if (uvIndexData < 3) {
+    $('#uv-index').css('background-color', 'green');
+  } else if (uvIndexData < 6) {
+    $('#uv-index').css('background-color', 'yellow');
+  } else if (uvIndexData < 8) {
+    $('#uv-index').css('background-color', 'orange');
+  } else if (uvIndexData < 11) {
+    $('#uv-index').css('background-color', 'red');
+  } else {
+    $('#uv-index').css('background-color', 'violet');
+  }
 
-// currentWeatherDiv.append(uvIndex);
-// }
+}
 
 function buildForecastURL () {
 
@@ -97,14 +130,16 @@ console.log("---------------\nURL: " + forecastURL + "\n---------------");
 return forecastURL
 }
 
+// WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ ]
 function updateForecast(response) {
 
-  
+  // let futureDateData = response.
 
 }
 
 // function updateSearch () {
 
+// local storage with an array
   
 // }
 
@@ -122,10 +157,10 @@ function clear() {
 
     clear();
 
-    let weatherURL = buildQueryURL();
+    // let weatherURL = buildQueryURL();
     
     $.ajax({
-      url: weatherURL,
+      url: buildQueryURL(),
       method: "GET"
     }).then(updateWeather); 
 
@@ -136,12 +171,12 @@ function clear() {
     //   method: "GET"
     // }).then(updateUvIndex);
 
-    let forecastURL = buildForecastURL();
+    // let forecastURL = buildForecastURL();
 
-    $.ajax({
-      url: forecastURL,
-      method: "GET"
-    }).then(updateForecast);
+    // $.ajax({
+    //   url: forecastURL,
+    //   method: "GET"
+    // }).then(updateForecast);
     
     // updateSearch();
 });

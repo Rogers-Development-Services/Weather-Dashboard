@@ -20,7 +20,12 @@ $(document).ready(function() {
   const searchedDiv = $('#city-section');
   const searchBtn = $('#run-search');
 
-  let savedCities = JSON.parse(localStorage.getItem("cities")) || [];
+  let savedCities = JSON.parse(localStorage.getItem('cities')) || [];
+  console.log(typeof savedCities);
+  console.log (savedCities);
+  searchedDiv.append(savedCities[savedCities.length-1]);
+
+  // let savedCities = [];
 
   // This function will pull from the form and build the query URL for the current weather section.
   function buildQueryURL () {
@@ -85,10 +90,18 @@ $(document).ready(function() {
     currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
 
     console.log(cityNameData);
-    const searchedCities = $(`<div>${localStorage.getItem(cityNameData)}</div>`);
-    searchedDiv.prepend(searchedCities);
+    // for (i = 0; savedCities.length >= 9; i++) {
+    //   var searchedCities = $(`<div>${localStorage.getItem(savedCities[i])}</div>`);
+    // }
 
-    savedCities.push(cityNameData)
+    savedCities.push(cityNameData);
+    console.log(savedCities);
+
+
+    for ( var i = 0, len = localStorage.length; i < len; ++i ) {
+      let searchedCities = $(`<div>${localStorage.getItem(localStorage.key(i))}</div>`);
+      searchedDiv.prepend(searchedCities);
+    }
 
     localStorage.setItem("cities", JSON.stringify(savedCities));
 

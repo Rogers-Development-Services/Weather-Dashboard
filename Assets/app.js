@@ -2,7 +2,7 @@
 // WHEN I search for a city THEN I am presented with current and future conditions for that city and that city is added to the search history [ ]
 // WHEN I view current weather conditions for that city THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index [ X ]
 // WHEN I view the UV index THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe [ X ]
-// WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ ]
+// WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ X ]
 // WHEN I click on a city in the search history THEN I am again presented with current and future conditions for that city [ ]
 // WHEN I open the weather dashboard THEN I am presented with the last searched city forecast [ ]
 
@@ -13,11 +13,9 @@ const queryParams = {
   'appid': '20062578d6282047a3d69cc7caf70ee7',
   'units': 'imperial'
 };
-const forecastData = {
-
-};
 const currentWeatherDiv = $('#current-weather');
 const forecastDiv = $('#weekly-forecast')
+const searchedDiv = $('#city-section')
 
 // This function will pull from the form and build the query URL for the current weather section.
 function buildQueryURL () {
@@ -26,7 +24,7 @@ function buildQueryURL () {
     .val()
     .trim();
   // console.log(queryParams.q);
-  console.log(queryParams);
+  // console.log(queryParams);
 
   // queryParams.sys.state = $('#search-state')
   //   .val()
@@ -37,7 +35,7 @@ function buildQueryURL () {
   //   .trim();
 
   let queryURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + queryParams.q + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
-  console.log("---------------\nURL: " + queryURL + "\n---------------");
+  // console.log("---------------\nURL: " + queryURL + "\n---------------");
   return queryURL;
 }
 
@@ -45,13 +43,13 @@ function buildQueryURL () {
 function updateWeather (response) {
 
   let cityNameData = response.name;
-  let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A');
+  let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A (PT)');
   let weatherIcon = new Image();
-  console.log(response.weather);
+  // console.log(response.weather);
   weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
   weatherIcon.alt = response.weather[0].description;
-  console.log(weatherIcon.alt);
-  console.log(weatherIcon);
+  // console.log(weatherIcon.alt);
+  // console.log(weatherIcon);
   
   let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
   let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
@@ -59,39 +57,41 @@ function updateWeather (response) {
 
   // set the lat and log for UV coordinates in queryParams{} 
   queryParams.lat = response.coord.lat;
-  console.log(queryParams.lat)
+  // console.log(queryParams.lat)
   queryParams.lon = response.coord.lon;
-  console.log(queryParams.lon)
-  console.log(queryParams);
+  // console.log(queryParams.lon)
+  // console.log(queryParams);
 
   let cityInfo = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
   let currentTemp = `<p>${currentTempData}</p>`;
   let currentHumidity = `<p>${currentHumidityData}</p>`;
   let windSpeed = `<p>${windSpeedData}</p>`
 
-  let uvURL = buildUvURL();
-
   $.ajax({
-    url: uvURL,
+    url: buildUvURL(),
     method: "GET"
   }).then(updateUvIndex);
 
-  let forecastURL = buildForecastURL();
-
   $.ajax({
-    url: forecastURL,
+    url: buildForecastURL(),
     method: "GET"
   }).then(updateForecast);
   
-
   currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
+
+  console.log(cityNameData);
+  const searchedCities = $('<div>').localStorage.getItem(cityNameData);
+  searchedDiv.prepend(searchedCities);
+  localStorage.setItem(cityNameData, JSON.stringify(queryParams.q));
+
+  // updateSearch();
 }
 
 function buildUvURL () {
 
-  console.log(queryParams);
+  // console.log(queryParams);
   let uvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
-  console.log("---------------\nURL: " + uvURL + "\n---------------");
+  // console.log("---------------\nURL: " + uvURL + "\n---------------");
   return uvURL;
 }
 
@@ -111,13 +111,12 @@ function updateUvIndex (response) {  //You need to wait for the AJAX call to com
   } else {
     $('#uv-index').css('background-color', 'violet');
   }
-
 }
 
 function buildForecastURL () {
 
 let forecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
-console.log("---------------\nURL: " + forecastURL + "\n---------------");
+// console.log("---------------\nURL: " + forecastURL + "\n---------------");
 
 return forecastURL
 }
@@ -157,11 +156,10 @@ function updateForecast(response) {
   }
 }
 
-// function updateSearch () {
+function updateSearch (response) {
 
-// local storage with an array
-  
-// }
+
+}
 
 // Function to empty out the cities
 function clear() {
@@ -170,50 +168,24 @@ function clear() {
   $('#city-selection').empty();
 }
 
+//Page is opened displaying last city searched
+// $(document).ready(function () {
+//   const displayCity = $('<div>').localStorage.getItem(cityNameData);
+//   console.log(cityNameData);
+//   $('#city-section').prepend(displayCity);
+// }) 
 
   // Event listener for search
-  $("#run-search").on("click", function(event) {
-    event.preventDefault();
+$("#run-search").on("click", function(event) {
+  event.preventDefault();
 
-    clear();
+  clear();
     
-    $.ajax({
-      url: buildQueryURL(),
-      method: "GET"
-    }).then(updateWeather); 
-    
-    // updateSearch();
+  $.ajax({
+    url: buildQueryURL(),
+    method: "GET"
+  }).then(updateWeather); 
 });
 
 //  .on("click") function associated with the clear button
 $("#clear-all").on("click", clear);
-
-
-
-
-
-
-
-  // let cityNameData = response.name;
-  //       console.log(cityNameData);
-  //       let currentDateData = response.dt;
-  //       console.log(time(currentDateData));
-
-
-  //       let currentTemp = response.main.temp;
-  //       console.log(currentTemp);
-  //       let currentHumidity = response.main.humidity;
-  //       console.log(currentHumidity);
-  //       let windSpeedData = '#';
-  //       let uvIndexData = '#';
-
-        // search for the coordinates in the first api 
-        // let lattitude = response.coord.lat;
-        // let longitude = response.coord.lon;
-
-        // let currentWeather = $("<div>");
-
-        // currentWeather.attr("id", "current-weather");
-
-        // currentWeather.append(currentTemp, currentHumidity);
-        // $(".weather-display").append(currentWeather);

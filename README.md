@@ -21,10 +21,9 @@ PLEASE NOTE: if you open this scheduler in a different browser it will not save 
 This application is a work in progress, future updates will include: 
 
 1. Having the cities searched come up as a button instead of null, which when clicked will allow you to view your previous searches
-2. When the page is refreshed make sure the last city searched appears in the "Cities Searche" box first.
-3. Create proper logic for searching via state and country. (Only searching by city is currently supported)
-4. Verify App using [Nu Html Checker](https://validator.w3.org/nu/) 
-5. Check for ADA compliance using [Accessibility Insights for Web](https://accessibilityinsights.io/docs/en/web/overview)
+2. Create proper logic for searching via state and country. (Only searching by city is currently supported)
+3. Verify App using [Nu Html Checker](https://validator.w3.org/nu/) 
+4. Check for ADA compliance using [Accessibility Insights for Web](https://accessibilityinsights.io/docs/en/web/overview)
 
 ## Feedback
 

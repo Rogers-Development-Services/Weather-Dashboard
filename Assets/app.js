@@ -6,8 +6,6 @@
 // WHEN I click on a city in the search history THEN I am again presented with current and future conditions for that city [ ]
 // WHEN I open the weather dashboard THEN I am presented with the last searched city forecast [ X ]
 
-// @returns {string}
-
 $(document).ready(function() {
 
   // Declare Constants
@@ -33,15 +31,12 @@ $(document).ready(function() {
     searchedDiv.append(lastSavedBtn);
   }  
 
-
   // This function will pull from the form and build the query URL for the current weather section.
   function buildQueryURL () {
     
     queryParams.q = $('#search-city')
       .val()
       .trim();
-    // console.log(queryParams.q);
-    // console.log(queryParams);
 
     // queryParams.sys.state = $('#search-state')
     //   .val()
@@ -62,22 +57,15 @@ $(document).ready(function() {
     let cityNameData = response.name;
     let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A (PT)');
     let weatherIcon = new Image();
-    // console.log(response.weather);
-    weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
-    weatherIcon.alt = response.weather[0].description;
-    // console.log(weatherIcon.alt);
-    // console.log(weatherIcon);
-    
+        weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
+        weatherIcon.alt = response.weather[0].description;
     let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
     let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
     let windSpeedData = '<strong>Wind Speed: </strong>' + response.wind.speed + 'MPH';
 
     // set the lat and log for UV coordinates in queryParams{} 
     queryParams.lat = response.coord.lat;
-    // console.log(queryParams.lat)
     queryParams.lon = response.coord.lon;
-    // console.log(queryParams.lon)
-    // console.log(queryParams);
 
     let cityInfo = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
     let currentTemp = `<p>${currentTempData}</p>`;
@@ -96,17 +84,36 @@ $(document).ready(function() {
     
     currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
 
-//only want the 10 most recent submissions
+    // Filter Out Duplicates
+    let uniqueCities = savedCities.filter((c, index) => {
+      return savedCities.indexOf(c) === index;
+    });
+
+    let dupCities = savedCities.filter((c, index) => {
+      return savedCities.indexOf(c) !== index;
+    });
+
+    let savedCitiesNoDups = [];
+    savedCities.forEach((c) => {
+      if (!savedCities.includes(c)) {
+        savedCities.push(c);
+      }
+    });
 
     console.log(cityNameData);
     savedCities.push(cityNameData);
-    console.log(savedCities);
+    console.log("saved  " + savedCities);
+    console.log("no dups  " + savedCitiesNoDups);
+    console.log("unique  " + uniqueCities);
+    console.log("Duplicates  " + dupCities);
     updateTwice();
   }
 
-  // updates local storage and savedCities[]
+  // updates local storage and savedCities and enables clicking on save cities
   function updateTwice() {
     searchedDiv.empty();
+
+    //only want the 10 most recent submissions
     for (let i = 0 ; i < 10; i++) {
       const cityToAdd = savedCities[savedCities.length - 1 - i];
 
@@ -134,17 +141,6 @@ $(document).ready(function() {
             url: btnWeatherURL,
             method: "GET"
           }).then(updateWeather); 
-
-          $.ajax({
-            url: btnUvURL,
-            method: "GET"
-          }).then(updateUvIndex); 
-
-          $.ajax({
-            url: btnForecastURL,
-            method: "GET"
-          }).then(clearForecast, updateForecast); 
-
         });        
         // reference cityButton in some way since it corresponds to a specific city
         // on click write a new function or write the function in place for an ajax call similar to the one at the bottom of this file
@@ -161,7 +157,7 @@ $(document).ready(function() {
     localStorage.setItem('savedCities', JSON.stringify(savedCities)); 
   }
 
-
+  // this function will build our url for getting the current uv index
   function buildUvURL () {
 
     // console.log(queryParams);
@@ -188,6 +184,7 @@ $(document).ready(function() {
     }
   }
 
+  // this function will build our url to get the five day forecast
   function buildForecastURL () {
 
   let forecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
@@ -198,7 +195,7 @@ $(document).ready(function() {
 
   function updateForecast(response) {
 
-      //day's weather will be queried everyday at noon
+    //day's weather will be queried everyday at noon
     let noonIndex = 4;
     for (i=0; i < 5 ;i++) {
 

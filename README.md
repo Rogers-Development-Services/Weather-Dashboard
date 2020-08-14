@@ -14,13 +14,13 @@ Here is an example of our site in action:
 
 Click the the search bar underneath "City Search:" and type in your desired city to query, then push enter or click the search button. To query another city to receive forecast information repeat the search process and the cities will list up to 10 in the cities searched box.
 
-PLEASE NOTE: if you open this scheduler in a different browser it will not save your information.
+PLEASE NOTE: if you open this scheduler in a different browser it will not save your information. You can only store up to 10 cities at a time.
 
 ## Future Updates
 
 This application is a work in progress, future updates will include: 
 
-1. Having last city searched button appearing from local storage have an AJAX call
+1. Having last city searched button appearing from local storage AND has proper functionality.
 2. Create proper logic for searching via state and country. (Only searching by city is currently supported)
 3. Verify App using [Nu Html Checker](https://validator.w3.org/nu/) 
 4. Check for ADA compliance using [Accessibility Insights for Web](https://accessibilityinsights.io/docs/en/web/overview)

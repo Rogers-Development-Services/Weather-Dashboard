@@ -1,5 +1,5 @@
 // GIVEN a weather dashboard with form inputs 
-// WHEN I search for a city THEN I am presented with current and future conditions for that city and that city is added to the search history [ ]
+// WHEN I search for a city THEN I am presented with current and future conditions for that city and that city is added to the search history [ X ]
 // WHEN I view current weather conditions for that city THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index [ X ]
 // WHEN I view the UV index THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe [ X ]
 // WHEN I view future weather conditions for that city THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, and the humidity [ X ]
@@ -14,16 +14,25 @@ $(document).ready(function() {
   const queryParams = { 
     'appid': '20062578d6282047a3d69cc7caf70ee7',
     'units': 'imperial'
-  };
+  }; 
   const currentWeatherDiv = $('#current-weather');
   const forecastDiv = $('#weekly-forecast');
   const searchedDiv = $('#city-section');
   const searchBtn = $('#run-search');
 
-  let savedCities = JSON.parse(localStorage.getItem('cities')) || [];
-  // console.log(typeof savedCities);
-  // console.log (savedCities);
-  searchedDiv.append(savedCities[savedCities.length-1]);
+// Establishes savedCities and makes sure last city searched is available
+  let savedCities = JSON.parse(localStorage.getItem('savedCities'));
+  if (!savedCities) {
+    savedCities = [];
+    localStorage.setItem('savedCities', JSON.stringify(savedCities));
+  } else if (savedCities[0] !== undefined) {  
+    const firstCityToAdd = savedCities[savedCities.length - 1];
+    let lastSavedBtn = $(`<button class="city-button">${firstCityToAdd}</button>`);
+    lastSavedBtn.attr("id", lastSavedBtn.text());
+    searchedDiv.append(lastSavedBtn);
+    searchedDiv.append(lastSavedBtn);
+  }  
+
 
   // This function will pull from the form and build the query URL for the current weather section.
   function buildQueryURL () {
@@ -87,27 +96,71 @@ $(document).ready(function() {
     
     currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
 
+//only want the 10 most recent submissions
+
     console.log(cityNameData);
-    // for (i = 0; savedCities.length >= 9; i++) {
-    //   var searchedCities = $(`<div>${localStorage.getItem(savedCities[i])}</div>`);
-    // }
-
-    // savedCities.push(cityNameData);
+    savedCities.push(cityNameData);
     console.log(savedCities);
+    updateTwice();
+  }
 
+  // updates local storage and savedCities[]
+  function updateTwice() {
+    searchedDiv.empty();
+    for (let i = 0 ; i < 10; i++) {
+      const cityToAdd = savedCities[savedCities.length - 1 - i];
 
-    for ( var i = 0, len = localStorage.length; i <= len; ++i ) {
-      let searchedCities = $(`<div>${localStorage.getItem(localStorage.key(i))}</div>`);
-      console.log(localStorage.key(0));
-      console.log(localStorage.getItem(localStorage.key(0)));
-      console.log(localStorage.getItem('cities'));
-      console.log(searchedCities);
-      searchedDiv.prepend(searchedCities);
+      if (cityToAdd) {
+        let cityButton = $(`<button class="city-button">${cityToAdd}</button>`);
+        cityButton.attr("id", cityButton.text());
+        searchedDiv.append(cityButton);
+
+        // add a click listener function for each button
+        cityButton.on('click', function (event) {
+          event.preventDefault();
+          
+          clearWeather();
+
+          let btnName = cityButton.text();
+
+          let btnWeatherURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + btnName + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
+
+          let btnUvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
+
+          let btnForecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + btnName + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
+          console.log("---------------\nURL: " + btnForecastURL + "\n---------------");
+
+          $.ajax({
+            url: btnWeatherURL,
+            method: "GET"
+          }).then(updateWeather); 
+
+          $.ajax({
+            url: btnUvURL,
+            method: "GET"
+          }).then(updateUvIndex); 
+
+          $.ajax({
+            url: btnForecastURL,
+            method: "GET"
+          }).then(clearForecast, updateForecast); 
+
+        });        
+        // reference cityButton in some way since it corresponds to a specific city
+        // on click write a new function or write the function in place for an ajax call similar to the one at the bottom of this file
+        // either write a new buildQueryURL (with a different name) that takes in an argument which would be city name
+        // OR refactor original buildQueryURL to take in an argument (in which case add an argument in your buildQueryURL call at the bottom of this file) => $('#search-city') value trim
+        // maybe call that buildQueryURL function before (or inside like before is ok) the ajax with your "cityToAdd" reference string
+        // .then update weather
+        // hopefully that works
+        // we are doing this within the for loop above because we want to refrence each indiv btn, depending on its text within cityToAdd, and we can't access it anywhere outside of this loop.
+      }
     }
 
-    localStorage.setItem("cities", JSON.stringify(savedCities));
-
+    // update localstorage
+    localStorage.setItem('savedCities', JSON.stringify(savedCities)); 
   }
+
 
   function buildUvURL () {
 
@@ -178,8 +231,18 @@ $(document).ready(function() {
     }
   }
 
+  // function to empty out weather div
+  function clearWeather () {
+    $('#current-weather').empty();
+  }
+
+  // Function to empty out forecast div
+  function clearForecast () {
+    $('#weekly-forecast').empty();
+  }
+
   // Function to empty out the cities
-  function clear() {
+  function clearResults() {
     $('#weekly-forecast').empty();
     $('#current-weather').empty();
     $('#city-selection').empty();
@@ -189,7 +252,7 @@ $(document).ready(function() {
   $("#run-search").on("click", function(event) {
     event.preventDefault();
 
-    clear();
+    clearResults();
       
     $.ajax({
       url: buildQueryURL(),
@@ -198,5 +261,5 @@ $(document).ready(function() {
   });
 
   //  .on("click") function associated with the clear button
-  $("#clear-all").on("click", clear);
+  $("#clear-all").on("click", clearResults);
 })

@@ -20,10 +20,11 @@ PLEASE NOTE: if you open this scheduler in a different browser it will not save 
 
 This application is a work in progress, future updates will include: 
 
-1. Having the cities searched come up as a button instead of null, which when clicked will allow you to view your previous searches
+1. Having last city searched button appearing from local storage have an AJAX call
 2. Create proper logic for searching via state and country. (Only searching by city is currently supported)
 3. Verify App using [Nu Html Checker](https://validator.w3.org/nu/) 
 4. Check for ADA compliance using [Accessibility Insights for Web](https://accessibilityinsights.io/docs/en/web/overview)
+5. Have Forecast dispaly new 5-day forecast when clicking on a searched city button.
 
 ## Feedback
 

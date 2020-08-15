@@ -6,34 +6,46 @@
 // WHEN I click on a city in the search history THEN I am again presented with current and future conditions for that city [ ]
 // WHEN I open the weather dashboard THEN I am presented with the last searched city forecast [ X ]
 
-$(document).ready(function() {
+$(document).ready(function () {
 
   // Declare Constants
-  const queryParams = { 
+  const queryParams = {
     'appid': '20062578d6282047a3d69cc7caf70ee7',
     'units': 'imperial'
-  }; 
+  };
   const currentWeatherDiv = $('#current-weather');
   const forecastDiv = $('#weekly-forecast');
   const searchedDiv = $('#city-section');
   const searchBtn = $('#run-search');
+  let savedCitiesNoDups = [];
 
-// Establishes savedCities and makes sure last city searched is available
+  // Establishes savedCities and makes sure last city searched is available
   let savedCities = JSON.parse(localStorage.getItem('savedCities'));
   if (!savedCities) {
     savedCities = [];
     localStorage.setItem('savedCities', JSON.stringify(savedCities));
-  } else if (savedCities[0] !== undefined) {  
+  } else if (savedCities[0] !== undefined) {
     const firstCityToAdd = savedCities[savedCities.length - 1];
     let lastSavedBtn = $(`<button class="city-button">${firstCityToAdd}</button>`);
     lastSavedBtn.attr("id", lastSavedBtn.text());
     searchedDiv.append(lastSavedBtn);
     searchedDiv.append(lastSavedBtn);
-  }  
+  }
+function getUniqueCities (savedCities) {
+    let savedCitiesNoDups = [];
+  savedCities.forEach((city) => {
+    let cityNotInArray = !savedCitiesNoDups.includes(city);  //reduce?
+    if (cityNotInArray) {
+      savedCitiesNoDups.push(city);
+    }
+  });
+return savedCitiesNoDups
+
+}
 
   // This function will pull from the form and build the query URL for the current weather section.
-  function buildQueryURL () {
-    
+  function buildQueryURL() {
+
     queryParams.q = $('#search-city')
       .val()
       .trim();
@@ -41,24 +53,24 @@ $(document).ready(function() {
     // queryParams.sys.state = $('#search-state')
     //   .val()
     //   .trim();
-      
+
     // queryParams.sys.country = $('#search-country')
     //   .val()
     //   .trim();
 
-    let queryURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + queryParams.q + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
+    let queryURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
     // console.log("---------------\nURL: " + queryURL + "\n---------------");
     return queryURL;
   }
 
   // This function takes API Data (JSON/Object) and turns it into elements with the current weather card
-  function updateWeather (response) {
+  function updateWeather(response) {
 
     let cityNameData = response.name;
-    let currentDateData = moment(response.dt*1000).format('dddd, MMMM Do, YYYY @h:mm A (PT)');
+    let currentDateData = moment(response.dt * 1000).format('dddd, MMMM Do, YYYY @h:mm A (PT)');
     let weatherIcon = new Image();
-        weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
-        weatherIcon.alt = response.weather[0].description;
+    weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
+    weatherIcon.alt = response.weather[0].description;
     let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
     let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
     let windSpeedData = '<strong>Wind Speed: </strong>' + response.wind.speed + 'MPH';
@@ -81,84 +93,36 @@ $(document).ready(function() {
       url: buildForecastURL(),
       method: "GET"
     }).then(updateForecast);
-    
+
     currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
 
     // Filter Out Duplicates
-    let uniqueCities = savedCities.filter((c, index) => {
-      return savedCities.indexOf(c) === index;
-    });
+    // let uniqueCities = savedCities.filter((city, index) => {
+    //   return savedCities.indexOf(city) === index;
+    // });
 
-    let dupCities = savedCities.filter((c, index) => {
-      return savedCities.indexOf(c) !== index;
-    });
+    // let dupCities = savedCities.filter((city, index) => {
+    //   return savedCities.indexOf(city) !== index;
+    // });
 
-    let savedCitiesNoDups = [];
-    savedCities.forEach((c) => {
-      if (!savedCities.includes(c)) {
-        savedCities.push(c);
+    savedCities.forEach((city) => {
+      let cityNotInArray = !savedCitiesNoDups.includes(city);  //reduce?
+      if (cityNotInArray) {
+        savedCitiesNoDups.push(city);
       }
     });
 
     console.log(cityNameData);
     savedCities.push(cityNameData);
-    console.log("saved  " + savedCities);
+    // console.log("saved  " + savedCities);
     console.log("no dups  " + savedCitiesNoDups);
-    console.log("unique  " + uniqueCities);
-    console.log("Duplicates  " + dupCities);
+    // console.log("unique  " + uniqueCities);
+    // console.log("Duplicates  " + dupCities);
     updateTwice();
   }
 
-  // updates local storage and savedCities and enables clicking on save cities
-  function updateTwice() {
-    searchedDiv.empty();
-
-    //only want the 10 most recent submissions
-    for (let i = 0 ; i < 10; i++) {
-      const cityToAdd = savedCities[savedCities.length - 1 - i];
-
-      if (cityToAdd) {
-        let cityButton = $(`<button class="city-button">${cityToAdd}</button>`);
-        cityButton.attr("id", cityButton.text());
-        searchedDiv.append(cityButton);
-
-        // add a click listener function for each button
-        cityButton.on('click', function (event) {
-          event.preventDefault();
-          
-          clearWeather();
-
-          let btnName = cityButton.text();
-
-          let btnWeatherURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + btnName + '&units=' + queryParams.units +'&appid=' + queryParams.appid;
-
-          let btnUvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
-
-          let btnForecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + btnName + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
-          console.log("---------------\nURL: " + btnForecastURL + "\n---------------");
-
-          $.ajax({
-            url: btnWeatherURL,
-            method: "GET"
-          }).then(updateWeather); 
-        });        
-        // reference cityButton in some way since it corresponds to a specific city
-        // on click write a new function or write the function in place for an ajax call similar to the one at the bottom of this file
-        // either write a new buildQueryURL (with a different name) that takes in an argument which would be city name
-        // OR refactor original buildQueryURL to take in an argument (in which case add an argument in your buildQueryURL call at the bottom of this file) => $('#search-city') value trim
-        // maybe call that buildQueryURL function before (or inside like before is ok) the ajax with your "cityToAdd" reference string
-        // .then update weather
-        // hopefully that works
-        // we are doing this within the for loop above because we want to refrence each indiv btn, depending on its text within cityToAdd, and we can't access it anywhere outside of this loop.
-      }
-    }
-
-    // update localstorage
-    localStorage.setItem('savedCities', JSON.stringify(savedCities)); 
-  }
-
   // this function will build our url for getting the current uv index
-  function buildUvURL () {
+  function buildUvURL() {
 
     // console.log(queryParams);
     let uvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
@@ -166,7 +130,7 @@ $(document).ready(function() {
     return uvURL;
   }
 
-  function updateUvIndex (response) {  //You need to wait for the AJAX call to come back, thats why we added the new ajax into the first function. JS is asynchronous. 
+  function updateUvIndex(response) {  //You need to wait for the AJAX call to come back, thats why we added the new ajax into the first function. JS is asynchronous. 
     let uvIndexData = response.value;
     let uvIndex = `<p><strong>UV Index: </strong><span id="uv-index">${uvIndexData}</span></p>`;
     currentWeatherDiv.append(uvIndex);
@@ -185,19 +149,19 @@ $(document).ready(function() {
   }
 
   // this function will build our url to get the five day forecast
-  function buildForecastURL () {
+  function buildForecastURL() {
 
-  let forecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
-  // console.log("---------------\nURL: " + forecastURL + "\n---------------");
+    let forecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + queryParams.q + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
+    // console.log("---------------\nURL: " + forecastURL + "\n---------------");
 
-  return forecastURL
+    return forecastURL
   }
 
   function updateForecast(response) {
 
     //day's weather will be queried everyday at noon
     let noonIndex = 4;
-    for (i=0; i < 5 ;i++) {
+    for (i = 0; i < 5; i++) {
 
       const dateDiv = $('<div>').css({
         "display": "block",
@@ -211,9 +175,9 @@ $(document).ready(function() {
       dateDiv.attr({
         "id": "weekday-forecast",
       })
-      const dateData = moment(response.list[noonIndex].dt*1000).format('ddd <br> MM-D-YY');
+      const dateData = moment(response.list[noonIndex].dt * 1000).format('ddd <br> MM-D-YY');
       const dateIcon = new Image();
-      dateIcon.src = 'http://openweathermap.org/img/wn/' + response.list[noonIndex].weather[0].icon.replace('n','d') + '.png';
+      dateIcon.src = 'http://openweathermap.org/img/wn/' + response.list[noonIndex].weather[0].icon.replace('n', 'd') + '.png';
       dateIcon.alt = response.list[noonIndex].weather[0].description;
       const dateTempData = '<strong>Temperature: </strong>' + '<br>' + response.list[i].main.temp + ' ℉'
       const dateHumidityData = '<strong>Humidity: </strong>' + '<br>' + response.list[i].main.humidity + ' %';
@@ -221,20 +185,114 @@ $(document).ready(function() {
       let dateEl = `<h5>${dateData}</h5>`;
       let dateTempEl = `<p>${dateTempData}</p>`;
       let dateHumidity = `<p>${dateHumidityData}</p>`;
-      
+
       dateDiv.append(dateEl, dateIcon, dateTempEl, dateHumidity);
       forecastDiv.append(dateDiv);
       noonIndex += 8
     }
   }
 
+    // updates local storage and savedCities and enables clicking on save cities
+    function updateTwice() {
+      searchedDiv.empty();
+      let savedCitiesNoDups = getUniqueCities(savedCities);
+
+      //only want the 10 most recent submissions
+      for (let i = 0; i < 10; i++) {
+        const cityToAdd = savedCitiesNoDups[savedCitiesNoDups.length - 1 - i];
+  
+        if (cityToAdd) {
+          let cityButton = $(`<button class="city-button">${cityToAdd}</button>`);
+          cityButton.attr("id", cityButton.text());
+          searchedDiv.append(cityButton);
+  
+          // add a click listener function for each button
+          cityButton.on('click', function (event) {
+            event.preventDefault();
+  
+            clearWeather();
+  
+            let btnName = cityButton.text();
+            console.log(typeof(btnName));
+  
+            let btnWeatherURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + btnName + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
+            console.log(typeof(btnWeatherURL));
+            console.log("---------------\nURL: " + btnWeatherURL + "\n---------------");
+  
+  
+            let btnUvURL = 'https://api.openweathermap.org/data/2.5/uvi?appid=' + queryParams.appid + '&lat=' + queryParams.lat + '&lon=' + queryParams.lon;
+            console.log("---------------\nURL: " + btnUvURL + "\n---------------");
+  
+  
+            let btnForecastURL = 'https://api.openweathermap.org/data/2.5/forecast?q=' + btnName + '&units=' + queryParams.units + '&appid=' + queryParams.appid;
+            console.log("---------------\nURL: " + btnForecastURL + "\n---------------");
+  
+            $.ajax({
+              url: btnWeatherURL,
+              method: "GET"
+            }).then(function (response) {
+              btnWeatherUpdate (response, btnUvURL, btnForecastURL); //needed to call this by hand instead of just 'sucess'
+            });
+          });
+          // reference cityButton in some way since it corresponds to a specific city
+          // on click write a new function or write the function in place for an ajax call similar to the one at the bottom of this file
+          // either write a new buildQueryURL (with a different name) that takes in an argument which would be city name
+          // OR refactor original buildQueryURL to take in an argument (in which case add an argument in your buildQueryURL call at the bottom of this file) => $('#search-city') value trim
+          // maybe call that buildQueryURL function before (or inside like before is ok) the ajax with your "cityToAdd" reference string
+          // .then update weather
+          // hopefully that works
+          // we are doing this within the for loop above because we want to refrence each indiv btn, depending on its text within cityToAdd, and we can't access it anywhere outside of this loop.
+        }
+      }
+  
+      // update localstorage
+      localStorage.setItem('savedCities', JSON.stringify(savedCities));
+    }
+  
+    function btnWeatherUpdate(response, btnUvURL, btnForecastURL) {
+  
+      clearForecast();
+  
+      let cityNameData = response.name;
+      console.log(cityNameData);
+      let currentDateData = moment(response.dt * 1000).format('dddd, MMMM Do, YYYY @h:mm A (PT)');
+      let weatherIcon = new Image();
+      weatherIcon.src = 'http://openweathermap.org/img/wn/' + response.weather[0].icon + '.png';
+      weatherIcon.alt = response.weather[0].description;
+      let currentTempData = '<strong>Temperature: </strong>' + response.main.temp + ' ℉';
+      let currentHumidityData = '<strong>Humidity: </strong>' + response.main.humidity + ' %';
+      let windSpeedData = '<strong>Wind Speed: </strong>' + response.wind.speed + 'MPH';
+  
+      // set the lat and log for UV coordinates in queryParams{} 
+      queryParams.lat = response.coord.lat;
+      queryParams.lon = response.coord.lon;
+  
+      let cityInfo = `<h2>${cityNameData}</h2>` + `<h4>${currentDateData}</h4>`;
+      let currentTemp = `<p>${currentTempData}</p>`;
+      let currentHumidity = `<p>${currentHumidityData}</p>`;
+      let windSpeed = `<p>${windSpeedData}</p>`
+  
+      $.ajax({
+        url: btnUvURL,
+        method: "GET"
+      }).then(updateUvIndex);
+  
+      $.ajax({
+        url: btnForecastURL,
+        method: "GET"
+      }).then(updateForecast);
+  
+      currentWeatherDiv.append(cityInfo, weatherIcon, currentTemp, currentHumidity, windSpeed);
+    }  
+
+
   // function to empty out weather div
-  function clearWeather () {
+  function clearWeather() {
     $('#current-weather').empty();
   }
 
   // Function to empty out forecast div
-  function clearForecast () {
+  function clearForecast() {
     $('#weekly-forecast').empty();
   }
 
@@ -245,16 +303,16 @@ $(document).ready(function() {
     $('#city-selection').empty();
   }
 
-    // Event listener for search
-  $("#run-search").on("click", function(event) {
+  // Event listener for search
+  $("#run-search").on("click", function (event) {
     event.preventDefault();
 
     clearResults();
-      
+
     $.ajax({
       url: buildQueryURL(),
       method: "GET"
-    }).then(updateWeather); 
+    }).then(updateWeather);
   });
 
   //  .on("click") function associated with the clear button

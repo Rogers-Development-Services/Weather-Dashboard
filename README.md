@@ -1,4 +1,4 @@
-# Work-Day-Scheduler
+# Weather-Dashboard
 
 This application will generate the current weather conditions for a city and the succeeding five day forecast. 
 

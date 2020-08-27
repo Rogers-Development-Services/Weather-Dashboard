@@ -1,5 +1,5 @@
 # Weather-Dashboard
-https://img.shields.io/github/license/Rogers-Development-Services/Weather-Dashboard
+(https://img.shields.io/github/license/Rogers-Development-Services/Weather-Dashboard)
 This application will generate the current weather conditions for a city and the succeeding five day forecast. 
 
 Click this link to access the [Deployed Application](https://rogers-development-services.github.io/Weather-Dashboard/)
